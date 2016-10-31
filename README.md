@@ -56,6 +56,7 @@ $ ./check_munin_node --host example.com --service df --metric _dev_root
 Fully specific example of the above:
 
 $ ./check_munin_node --host example.com --service df --metric _dev_root \
+	--message "Everything is OK - disk free is {VALUE}%" \
 	--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \
 	--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
 ```
