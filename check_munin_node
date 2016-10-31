@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+
+import json, urllib2, argparse, sys, socket, telnetlib, extwrap
+
+parser = argparse.ArgumentParser(
+	description='Call out to a munin node and ask for a metric, and emit it in a way that nagios can process it',
+	formatter_class = argparse.RawDescriptionHelpFormatter,
+	epilog = textwrap.dedent('''\
+		Examples:
+		---
+		Return a list of services from example.com:
+
+		$ ./check_munin_node --host example.com
+
+		Return a list of metrics from the df service on example.com:
+
+		$ ./check_munin_node --host example.com --service df
+
+		Return a value from the _dev_root metric from the df service on example.com, using
+		the remote munin config to determine the warning and critical states:
+
+		$ ./check_munin_node --host example.com --service df --metric _dev_root
+
+		Fully specific example of the above:
+
+		$ ./check_munin_node --host example.com --service df --metric _dev_root \\
+			--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \\
+			--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
+	'''))
+
+parser.add_argument('--host', required = True, type = str, help = 'Host to contact')
+parser.add_argument('--port', type = int, help = 'Port to contact (optional, default %(default)i)', default = 4949)
+parser.add_argument('--service', type = str, help = 'Munin service to call (e.g. df, cpu, load, etc.) - if omitted a list of services on the host will be displayed')
+parser.add_argument('--metric', type = str, help = 'Metric to fetch the value of (e.g. user.value, load.value - this must be one of the metrics returned by the service)i - if omitted a list of the metrics provided by the service will be displayed')
+parser.add_argument('--message', type = str, default = '{HOST}/{METRIC} is OK - {VALUE}', help = 'message to return for this metric - {VALUE} can be used as a placeholder for the return value (optional)')
+parser.add_argument('--warning', type = str, help = 'Value at which the metric is in a warning state - if not supplied the value configured on the munin node will be used (optional)')
+parser.add_argument('--warning-message', type = str, default = '{HOST}/{METRIC} is WARNING - {VALUE}', help = 'message to return is this metric is in a warning state (optional)');
+parser.add_argument('--critical', type = str, help = 'Value at which the metric is in a critical state - if not supplied the value configured on the munin node will be used (optional)')
+parser.add_argument('--critical-message', type = str, default = '{HOST}/{METRIC} is CRITICAL - {VALUE}', help = 'message to return is this metric is in a critical state (optional)');
+
+args = parser.parse_args()
+
+# Connect to the host:
+tn = telnetlib.Telnet(args.host, args.port, timeout = 2)
+tn.read_until("\\n", 1)	# Ignore banner
+
+if args.service is None:
+	print "Services on "+args.host+" - specify one with --service"
+	tn.write('list\n')
+	for service in tn.read_until("\\n", 1).split(' '):
+		print service
+	sys.exit(2)
+
+
+munin_config = {}
+# Fetch the munin config for the service
+tn.write('config '+args.service+'\n')
+for line in tn.read_until("\\n", 1).split('\n'):
+	line = line.split(' ', 1)
+	if not len(line) == 2:
+		continue
+	munin_config[line[0]] = line[1]
+
+tn.write('fetch '+args.service+'\n')
+metrics = tn.read_until("\\n", 1).split('\n')
+exitcode = 0
+found = False
+printed = False
+
+if args.metric is None:
+	print "Metrics on the "+args.service+" service - specify one with --metric"
+
+for metric in metrics:
+	metric = metric.split(' ')
+	if not len(metric) == 2:
+		continue
+
+	if args.metric is None:
+		found = True	# Suppress 'not found' message at the end
+		print "{} => {}".format(metric[0].replace('.value', ''), metric[1])
+	else:
+		if metric[0] == args.metric+'.value':
+			found = True
+			# Get warn and critical values - args takes precedence over munin config
+			if args.warning:
+				munin_config[args.metric+'.warning'] = args.warning
+			if args.critical:
+				munin_config[args.metric+'.critical'] = args.critical
+
+			if not printed and metric[1] >= munin_config[args.metric+'.critical']:
+				print args.critical_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
+				exitcode = 2
+				printed = True
+
+			if not printed and metric[1] >= munin_config[args.metric+'.warning']:
+				print args.warning_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
+				exitcode = 1
+				printed = True
+
+			if not printed:
+				print args.message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
+
+if not found:
+	print "Metric "+args.metric+" not found at munin://"+args.host+":"+str(args.port)+"/"+args.service
+	exitcode = 2
+
+sys.exit(exitcode)
+
