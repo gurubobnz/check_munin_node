@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 
-import json, urllib2, argparse, sys, socket, telnetlib, extwrap
+import json, urllib2, argparse, sys, socket, telnetlib
 
 parser = argparse.ArgumentParser(
 	description='Call out to a munin node and ask for a metric, and emit it in a way that nagios can process it',
 	formatter_class = argparse.RawDescriptionHelpFormatter,
-	epilog = textwrap.dedent('''\
-		Examples:
-		---
-		Return a list of services from example.com:
+	epilog = '''\
+Examples:
+---
+Return a list of services from example.com:
 
-		$ ./check_munin_node --host example.com
+$ ./check_munin_node --host example.com
 
-		Return a list of metrics from the df service on example.com:
+Return a list of metrics from the df service on example.com:
 
-		$ ./check_munin_node --host example.com --service df
+$ ./check_munin_node --host example.com --service df
 
-		Return a value from the _dev_root metric from the df service on example.com, using
-		the remote munin config to determine the warning and critical states:
+Return a value from the _dev_root metric from the df service on example.com, using
+the remote munin config to determine the warning and critical states:
 
-		$ ./check_munin_node --host example.com --service df --metric _dev_root
+$ ./check_munin_node --host example.com --service df --metric _dev_root
 
-		Fully specific example of the above:
+Fully specific example of the above:
 
-		$ ./check_munin_node --host example.com --service df --metric _dev_root \\
-			--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \\
-			--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
-	'''))
+$ ./check_munin_node --host example.com --service df --metric _dev_root \\
+	--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \\
+	--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
+''')
 
 parser.add_argument('--host', required = True, type = str, help = 'Host to contact')
 parser.add_argument('--port', type = int, help = 'Port to contact (optional, default %(default)i)', default = 4949)
