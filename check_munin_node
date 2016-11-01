@@ -57,9 +57,13 @@ munin_config = {}
 tn.write('config '+args.service+'\n')
 for line in tn.read_until("\\n", 1).split('\n'):
 	line = line.split(' ', 1)
-	if not len(line) == 2:
+	if not len(line) == 2 or line[0] == '#':
 		continue
 	munin_config[line[0]] = line[1]
+
+if munin_config == {}:
+	print "Could not find a service called "+args.service+" on "+args.host
+	sys.exit(2)
 
 tn.write('fetch '+args.service+'\n')
 metrics = tn.read_until("\\n", 1).split('\n')
@@ -72,7 +76,7 @@ if args.metric is None:
 
 for metric in metrics:
 	metric = metric.split(' ')
-	if not len(metric) == 2:
+	if not len(metric) == 2 or line[0] == '#':
 		continue
 
 	if args.metric is None:
@@ -84,8 +88,17 @@ for metric in metrics:
 			# Get warn and critical values - args takes precedence over munin config
 			if args.warning:
 				munin_config[args.metric+'.warning'] = args.warning
+			else:
+				if not munin_config.has_key(args.metric+'.warning'):
+					print 'Got value '+str(metric[1])+' but no warning threshold was returned for the '+args.metric+' (service: '+args.service+') on '+args.host+', and one was not specified via --warning'
+					sys.exit(2)
+
 			if args.critical:
 				munin_config[args.metric+'.critical'] = args.critical
+			else:
+				if not munin_config.has_key(args.metric+'.critical'):
+					print 'Got value '+str(metric[1])+' but no warning threshold was returned for the '+args.metric+' (service: '+args.service+') on '+args.host+', and one was not specified via --warning'
+					sys.exit(2)
 
 			if not printed and metric[1] >= munin_config[args.metric+'.critical']:
 				print args.critical_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
