@@ -1,13 +1,8 @@
 # check_munin_node
+
+This command is a bridge between nagios and munin nodes. We use it so provide nagios based alerts for munin nodes that we are interested in. There is a similar project already called check_munin_rrd which works with the data that the munin core collects from the nodes, but our use case is such that the munin rrd files cannot be accessed from our nagios machine (nor do we want to make them available).
+
 ```
-usage: check_munin_node [-h] --host HOST [--port PORT] [--service SERVICE]
-                        [--metric METRIC] [--message MESSAGE]
-                        [--warning WARNING]
-                        [--warning-message WARNING_MESSAGE]
-                        [--critical CRITICAL]
-                        [--critical-message CRITICAL_MESSAGE]
-check_munin_node: error: argument --host is required
-root@nagios:/opt/turboweb/nagios/commands# ./check_munin_node  -h
 usage: check_munin_node [-h] --host HOST [--port PORT] [--service SERVICE]
                         [--metric METRIC] [--message MESSAGE]
                         [--warning WARNING]
@@ -61,6 +56,7 @@ $ ./check_munin_node --host example.com --service df --metric _dev_root
 Fully specific example of the above:
 
 $ ./check_munin_node --host example.com --service df --metric _dev_root \
+	--message "Everything is OK - disk free is {VALUE}%" \
 	--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \
 	--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
 ```
