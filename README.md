@@ -14,7 +14,7 @@ Call out to a munin node and ask for a metric, and emit it in a way that nagios 
 
 optional arguments:
   -h, --help            show this help message and exit
-  --host HOST           Host to contact
+  --host HOST           Host to contact (optional, default localhost)
   --port PORT           Port to contact (optional, default 4949)
   --service SERVICE     Munin service to call (e.g. df, cpu, load, etc.) - if
                         omitted a list of services on the host will be

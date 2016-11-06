@@ -28,7 +28,7 @@ $ ./check_munin_node --host example.com --service df --metric _dev_root \\
 	--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
 ''')
 
-parser.add_argument('--host', required = True, type = str, help = 'Host to contact')
+parser.add_argument('--host', type = str, help = 'Host to contact (default: %(default)s)', default = 'localhost')
 parser.add_argument('--port', type = int, help = 'Port to contact (optional, default %(default)i)', default = 4949)
 parser.add_argument('--service', type = str, help = 'Munin service to call (e.g. df, cpu, load, etc.) - if omitted a list of services on the host will be displayed')
 parser.add_argument('--metric', type = str, help = 'Metric to fetch the value of (e.g. user.value, load.value - this must be one of the metrics returned by the service)i - if omitted a list of the metrics provided by the service will be displayed')
