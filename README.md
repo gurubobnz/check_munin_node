@@ -1,6 +1,6 @@
 # check_munin_node
 
-This command is a bridge between nagios and munin nodes. We use it so provide nagios based alerts for munin nodes that we are interested in. There is a similar project already called check_munin_rrd which works with the data that the munin core collects from the nodes, but our use case is such that the munin rrd files cannot be accessed from our nagios machine (nor do we want to make them available).
+This command is a bridge between nagios and munin nodes. We use it to provide nagios based alerts for munin nodes that we are interested in. There is a similar project already called check_munin_rrd which works with the data that the munin core collects from the nodes, but our use case is such that the munin rrd files cannot be accessed from our nagios machine (nor do we want to make them available).
 
 ```
 usage: check_munin_node [-h] --host HOST [--port PORT] [--service SERVICE]
@@ -10,7 +10,7 @@ usage: check_munin_node [-h] --host HOST [--port PORT] [--service SERVICE]
                         [--critical CRITICAL]
                         [--critical-message CRITICAL_MESSAGE]
 
-Call out to a munin node and ask for a metric, and emit it in a way that nagios can process it
+Call out to a munin node and ask for a metric, and emit it in a way that nagios can process
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -29,13 +29,13 @@ optional arguments:
                         not supplied the value configured on the munin node
                         will be used (optional)
   --warning-message WARNING_MESSAGE
-                        message to return is this metric is in a warning state
+                        message to return if this metric is in a warning state
                         (optional)
   --critical CRITICAL   Value at which the metric is in a critical state - if
                         not supplied the value configured on the munin node
                         will be used (optional)
   --critical-message CRITICAL_MESSAGE
-                        message to return is this metric is in a critical
+                        message to return if this metric is in a critical
                         state (optional)
 
 Examples:
