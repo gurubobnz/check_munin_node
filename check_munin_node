@@ -41,8 +41,13 @@ parser.add_argument('--critical-message', type = str, default = '{HOST}/{METRIC}
 args = parser.parse_args()
 
 # Connect to the host:
-tn = telnetlib.Telnet(args.host, args.port, timeout = 2)
-tn.read_until("\\n", 1)	# Ignore banner
+try:
+	tn = telnetlib.Telnet(args.host, args.port, timeout = 2)
+	tn.read_until("\\n", 1)	# Ignore banner
+except EOFError as e:
+	print "Unable to connect to "+args.host+":"+str(args.port)
+	sys.exit(2)
+
 
 if args.service is None:
 	print "Services on "+args.host+" - specify one with --service"
