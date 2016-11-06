@@ -3,7 +3,7 @@
 import json, urllib2, argparse, sys, socket, telnetlib
 
 parser = argparse.ArgumentParser(
-	description='Call out to a munin node and ask for a metric, and emit it in a way that nagios can process it',
+	description='Call out to a munin node and ask for a metric, and emit it in a way that nagios can process',
 	formatter_class = argparse.RawDescriptionHelpFormatter,
 	epilog = '''\
 Examples:
@@ -34,9 +34,9 @@ parser.add_argument('--service', type = str, help = 'Munin service to call (e.g.
 parser.add_argument('--metric', type = str, help = 'Metric to fetch the value of (e.g. user.value, load.value - this must be one of the metrics returned by the service)i - if omitted a list of the metrics provided by the service will be displayed')
 parser.add_argument('--message', type = str, default = '{HOST}/{METRIC} is OK - {VALUE}', help = 'message to return for this metric - {VALUE} can be used as a placeholder for the return value (optional)')
 parser.add_argument('--warning', type = str, help = 'Value at which the metric is in a warning state - if not supplied the value configured on the munin node will be used (optional)')
-parser.add_argument('--warning-message', type = str, default = '{HOST}/{METRIC} is WARNING - {VALUE}', help = 'message to return is this metric is in a warning state (optional)');
+parser.add_argument('--warning-message', type = str, default = '{HOST}/{METRIC} is WARNING - {VALUE}', help = 'message to return if this metric is in a warning state (optional)');
 parser.add_argument('--critical', type = str, help = 'Value at which the metric is in a critical state - if not supplied the value configured on the munin node will be used (optional)')
-parser.add_argument('--critical-message', type = str, default = '{HOST}/{METRIC} is CRITICAL - {VALUE}', help = 'message to return is this metric is in a critical state (optional)');
+parser.add_argument('--critical-message', type = str, default = '{HOST}/{METRIC} is CRITICAL - {VALUE}', help = 'message to return if this metric is in a critical state (optional)');
 
 args = parser.parse_args()
 
