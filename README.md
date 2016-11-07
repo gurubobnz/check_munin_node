@@ -3,7 +3,7 @@
 This command is a bridge between nagios and munin nodes. We use it to provide nagios based alerts for munin nodes that we are interested in. There is a similar project already called check_munin_rrd which works with the data that the munin core collects from the nodes, but our use case is such that the munin rrd files cannot be accessed from our nagios machine (nor do we want to make them available).
 
 ```
-usage: check_munin_node [-h] --host HOST [--port PORT] [--service SERVICE]
+usage: check_munin_node [-h] [--host HOST] [--port PORT] [--service SERVICE]
                         [--metric METRIC] [--message MESSAGE]
                         [--warning WARNING]
                         [--warning-message WARNING_MESSAGE]
@@ -14,7 +14,7 @@ Call out to a munin node and ask for a metric, and emit it in a way that nagios 
 
 optional arguments:
   -h, --help            show this help message and exit
-  --host HOST           Host to contact (optional, default localhost)
+  --host HOST           Host to contact (default: localhost)
   --port PORT           Port to contact (optional, default 4949)
   --service SERVICE     Munin service to call (e.g. df, cpu, load, etc.) - if
                         omitted a list of services on the host will be
@@ -56,7 +56,6 @@ $ ./check_munin_node --host example.com --service df --metric _dev_root
 Fully specific example of the above:
 
 $ ./check_munin_node --host example.com --service df --metric _dev_root \
-	--message "Everything is OK - disk free is {VALUE}%" \
 	--warning 75 --warning-message "Hmm, better check disk space - it's at {VALUE}%" \
 	--critical 90 --critical-message "Holy cow, there's less than 10% disk free! (currently {VALUE}% full)"
 ```
