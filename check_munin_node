@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Note: requires python 2.7
 
 import json, urllib2, argparse, sys, socket, telnetlib
 
@@ -79,6 +80,23 @@ printed = False
 if args.metric is None:
 	print "Metrics on the "+args.service+" service - specify one with --metric"
 
+def is_in_range(value, range):
+	range_split = range.split(':')
+	if len(range_split) > 1:
+		lower = float(range_split[0]) if range_split[0].replace('.', '', 1).isdigit() else None
+		upper = float(range_split[1]) if range_split[1].replace('.', '', 1).isdigit() else None
+	else:
+		lower = float(range_split[0])
+		upper = None
+
+	if (upper < lower):
+		lower, upper = upper, lower
+
+	return (
+		(lower is None or value >= lower) and
+		(upper is None or value <= upper)
+	)
+
 for metric in metrics:
 	metric = metric.split(' ')
 	if not len(metric) == 2 or line[0] == '#':
@@ -102,15 +120,20 @@ for metric in metrics:
 				munin_config[args.metric+'.critical'] = args.critical
 			else:
 				if not munin_config.has_key(args.metric+'.critical'):
-					print 'Got value '+str(metric[1])+' but no warning threshold was returned for the '+args.metric+' (service: '+args.service+') on '+args.host+', and one was not specified via --warning'
+					print 'Got value '+str(metric[1])+' but no critical threshold was returned for the '+args.metric+' (service: '+args.service+') on '+args.host+', and one was not specified via --critical'
 					sys.exit(2)
 
-			if not printed and metric[1] >= munin_config[args.metric+'.critical']:
+			criticalRange = munin_config[args.metric+'.critical']
+			warningRange = munin_config[args.metric+'.warning']
+
+			print criticalRange
+
+			if not printed and is_in_range(float(metric[1]), criticalRange):
 				print args.critical_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
 				exitcode = 2
 				printed = True
 
-			if not printed and metric[1] >= munin_config[args.metric+'.warning']:
+			if not printed and is_in_range(float(metric[1]), warningRange):
 				print args.warning_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
 				exitcode = 1
 				printed = True
@@ -123,4 +146,3 @@ if not found:
 	exitcode = 2
 
 sys.exit(exitcode)
-
