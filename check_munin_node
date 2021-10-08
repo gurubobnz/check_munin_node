@@ -126,8 +126,6 @@ for metric in metrics:
 			criticalRange = munin_config[args.metric+'.critical']
 			warningRange = munin_config[args.metric+'.warning']
 
-			print criticalRange
-
 			if not printed and is_in_range(float(metric[1]), criticalRange):
 				print args.critical_message.replace('{VALUE}', str(metric[1])).replace('{METRIC}', args.metric).replace('{HOST}', args.host)
 				exitcode = 2
