@@ -85,12 +85,11 @@ def is_in_range(value, range):
 	if len(range_split) > 1:
 		lower = float(range_split[0]) if range_split[0].replace('.', '', 1).isdigit() else None
 		upper = float(range_split[1]) if range_split[1].replace('.', '', 1).isdigit() else None
+		if (upper < lower):
+			lower, upper = upper, lower		
 	else:
 		lower = float(range_split[0])
 		upper = None
-
-	if (upper < lower):
-		lower, upper = upper, lower
 
 	return (
 		(lower is None or value >= lower) and
